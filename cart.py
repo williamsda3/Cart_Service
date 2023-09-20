@@ -1,11 +1,11 @@
 # cart_service.py
 
 from flask import Flask, jsonify, request
-# import requests
+import requests
 
 app = Flask(__name__)
 
-PRODUCT_SERVICE_URL = 'http://localhost:5050'
+PRODUCT_SERVICE_URL = 'https://productservice-0lvt.onrender.com'
 
 # Implement this using a db for cart instead of dict or array
 # Implement quantities of products, keeping track of how much is available in the products db and syncing it here too 
@@ -28,7 +28,7 @@ def get_cart(user_id):
     cart_items = []
     for item in cart['items']:
         product_id = item['product_id']
-        product_details = request.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
+        product_details = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
         cart_items.append({
             'product_id': product_id,
             'name': product_details['name'],
@@ -44,13 +44,13 @@ def get_cart(user_id):
 def add_to_cart(user_id, product_id, quantity):
     # Assume you have a cart implementation
     # In a real application, update the cart in the database
-    product = request.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
+    product = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
 
     if user_id not in carts:
         carts[user_id] = {'items': []}
 
     # Reduce the product quantity and get the last transaction
-    response = request.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
+    response = requests.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
     product = response.json()
     last_transaction = product.get('last_transaction', 0)
 
@@ -73,7 +73,6 @@ def add_to_cart(user_id, product_id, quantity):
         })
 
     return jsonify(carts[user_id]), 200
-    return jsonify({'message': f'Product {product_id} added to cart for user {user_id}'}), 200
 
 # Remove a specified quantity of a product from the user’s car
 
