@@ -11,10 +11,11 @@ PRODUCT_SERVICE_URL = 'http://localhost:5050'
 # Implement quantities of products, keeping track of how much is available in the products db and syncing it here too 
 
 
-# Assume you have a cart implementation
-# In a real application,  have a proper cart implementation with a database
+
 
 carts = {}  # Dictionary to store cart information for each user
+
+# Retrieve the current contents of a user’s shopping cart, including product names, quantities, and total prices
 
 @app.route('/cart/<int:user_id>', methods=['GET'])
 def get_cart(user_id):
@@ -30,36 +31,55 @@ def get_cart(user_id):
         product_details = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
         cart_items.append({
             'product_id': product_id,
-           
             'name': product_details['name'],
-            'price': product_details['price']
+            'price': product_details['price'],
+            'quantity': product_details['quantity']
         })
 
-    response = {
-        'user_id': user_id,
-        'items': cart_items
-      
-    }
-    return (f'{user_id} Your Cart:\n{cart_items}'), 200
-    return jsonify(response), 200
 
-@app.route('/cart/<int:user_id>/add/<int:product_id>', methods=['GET'])
-def add_to_cart(user_id, product_id):
+    return (f'{user_id} Your Cart:\n{cart_items}'), 200
+   
+# Add a specified quantity of a product to the user’s cart
+@app.route('/cart/<int:user_id>/add/<int:product_id>/<int:quantity>', methods=['POST'])
+def add_to_cart(user_id, product_id, quantity):
     # Assume you have a cart implementation
-    # In a real application,  update the cart in the database
+    # In a real application, update the cart in the database
     product = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
 
     if user_id not in carts:
         carts[user_id] = {'items': []}
 
-    carts[user_id]['items'].append({'product_id': product_id, 'item':product['name']})
+    # Reduce the product quantity and get the last transaction
+    response = requests.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
+    product = response.json()
+    last_transaction = product.get('last_transaction', 0)
+
+    # Check if the item is already in the cart
+    item_found = False
+    for item in carts[user_id]['items']:
+        if item['product_id'] == product_id:
+            item['quantity'] += quantity
+            item['last_transaction'] = last_transaction
+            item_found = True
+            break
+
+    # If the item is not already in the cart, add it
+    if not item_found:
+        carts[user_id]['items'].append({
+            'product_id': product_id,
+            'item': product['name'],
+            'quantity': quantity,
+            'last_transaction': last_transaction
+        })
+
     return jsonify(carts[user_id]), 200
     return jsonify({'message': f'Product {product_id} added to cart for user {user_id}'}), 200
 
+# Remove a specified quantity of a product from the user’s car
+
 @app.route('/cart/<int:user_id>/remove/<int:product_id>', methods=['POST'])# To test it out you can change to 'GET' # User should be able to specify item quantity to remove
 def remove_from_cart(user_id, product_id):
-    # Assume you have a cart implementation
-    # In a real application,  update the cart in the database
+    
     if user_id not in carts or 'items' not in carts[user_id]:
         return jsonify({'message': 'Cart not found'}), 404
 
