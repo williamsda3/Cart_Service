@@ -20,7 +20,7 @@ carts = {}  # Dictionary to store cart information for each user
 @app.route('/cart/<int:user_id>', methods=['GET'])
 def get_cart(user_id):
     if user_id not in carts:
-        return jsonify({'message': 'Cart not found'}), 404
+        return jsonify({'message': 'Cart not found - Creating new Cart'}), 404
 
     cart = carts[user_id]
 
@@ -90,9 +90,5 @@ def remove_from_cart(user_id, product_id):
 
     return jsonify({'message': f'Product {product_id} not found in cart for user {user_id}'}), 404
 
-def client():
-    while True:
-        print("Welcome to you cart!\nPress Ctrl+Z to quit...")
-        print("1) Create a new cart\n2) Add product to cart\n 3) Remove product from cart\n 4) View all products\n>>")
 if __name__ == '__main__':
     app.run( debug=True)
