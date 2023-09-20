@@ -1,7 +1,7 @@
 # cart_service.py
 
 from flask import Flask, jsonify, request
-import requests
+# import requests
 
 app = Flask(__name__)
 
@@ -28,7 +28,7 @@ def get_cart(user_id):
     cart_items = []
     for item in cart['items']:
         product_id = item['product_id']
-        product_details = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
+        product_details = request.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
         cart_items.append({
             'product_id': product_id,
             'name': product_details['name'],
@@ -44,13 +44,13 @@ def get_cart(user_id):
 def add_to_cart(user_id, product_id, quantity):
     # Assume you have a cart implementation
     # In a real application, update the cart in the database
-    product = requests.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
+    product = request.get(f'{PRODUCT_SERVICE_URL}/products/{product_id}').json()
 
     if user_id not in carts:
         carts[user_id] = {'items': []}
 
     # Reduce the product quantity and get the last transaction
-    response = requests.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
+    response = request.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
     product = response.json()
     last_transaction = product.get('last_transaction', 0)
 
@@ -96,4 +96,4 @@ def client():
         print("Welcome to you cart!\nPress Ctrl+Z to quit...")
         print("1) Create a new cart\n2) Add product to cart\n 3) Remove product from cart\n 4) View all products\n>>")
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5001, debug=True)
+    app.run( debug=True)
