@@ -76,8 +76,8 @@ def add_to_cart(user_id, product_id, quantity):
 
 # Remove a specified quantity of a product from the user’s cart
 
-@app.route('/cart/<int:user_id>/remove/<int:product_id>', methods=['POST'])# To test it out you can change to 'GET' # User should be able to specify item quantity to remove
-def remove_from_cart(user_id, product_id):
+@app.route('/cart/<int:user_id>/remove/<int:product_id>/<int:quantity>', methods=['POST'])# To test it out you can change to 'GET' # User should be able to specify item quantity to remove
+def remove_from_cart(user_id, product_id,quantity):
     
     if user_id not in carts or 'items' not in carts[user_id]:
         return jsonify({'message': 'Cart not found'}), 404
@@ -85,7 +85,9 @@ def remove_from_cart(user_id, product_id):
     cart_items = carts[user_id]['items']
     for item in cart_items:
         if item['product_id'] == product_id:
-            cart_items.remove(item)
+            item['quantity'] -= quantity
+            if item['quantity'] <= 0:
+                cart_items.remove(item)
             return jsonify({'message': f'Product {product_id} removed from cart for user {user_id}'}), 200
 
     return jsonify({'message': f'Product {product_id} not found in cart for user {user_id}'}), 404
