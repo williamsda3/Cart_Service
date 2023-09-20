@@ -51,7 +51,7 @@ def add_to_cart(user_id, product_id, quantity):
 
     # Reduce the product quantity and get the last transaction
     response = requests.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
-    if response.status_code >= 201:
+    if response.status_code <= 201:
         product = response.json()
         last_transaction = product.get('last_transaction', 0)
 
