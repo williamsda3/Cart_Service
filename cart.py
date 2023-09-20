@@ -33,7 +33,7 @@ def get_cart(user_id):
             'product_id': product_id,
             'name': product_details['name'],
             'price': product_details['price'],
-            'quantity': product_details['quantity']
+            'quantity': item['quantity']
         })
 
 
@@ -74,7 +74,7 @@ def add_to_cart(user_id, product_id, quantity):
 
     return jsonify(carts[user_id]), 200
 
-# Remove a specified quantity of a product from the user’s car
+# Remove a specified quantity of a product from the user’s cart
 
 @app.route('/cart/<int:user_id>/remove/<int:product_id>', methods=['POST'])# To test it out you can change to 'GET' # User should be able to specify item quantity to remove
 def remove_from_cart(user_id, product_id):
