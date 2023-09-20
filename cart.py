@@ -51,28 +51,32 @@ def add_to_cart(user_id, product_id, quantity):
 
     # Reduce the product quantity and get the last transaction
     response = requests.post(f'{PRODUCT_SERVICE_URL}/products/{product_id}/reduce/{quantity}')
-    product = response.json()
-    last_transaction = product.get('last_transaction', 0)
+    if response.status_code >= 201:
+        product = response.json()
+        last_transaction = product.get('last_transaction', 0)
 
-    # Check if the item is already in the cart
-    item_found = False
-    for item in carts[user_id]['items']:
-        if item['product_id'] == product_id:
-            item['quantity'] += quantity
-            item['last_transaction'] = last_transaction
-            item_found = True
-            break
+        # Check if the item is already in the cart
+        item_found = False
+        for item in carts[user_id]['items']:
+            if item['product_id'] == product_id:
+                item['quantity'] += quantity
+                item['last_transaction'] = last_transaction
+                item_found = True
+                break
 
-    # If the item is not already in the cart, add it
-    if not item_found:
-        carts[user_id]['items'].append({
-            'product_id': product_id,
-            'item': product['name'],
-            'quantity': quantity,
-            'last_transaction': last_transaction
-        })
+        # If the item is not already in the cart, add it
+        if not item_found:
+            carts[user_id]['items'].append({
+                'product_id': product_id,
+                'item': product['name'],
+                'quantity': quantity,
+                'last_transaction': last_transaction
+            })
 
-    return jsonify(carts[user_id]), 200
+        return jsonify(carts[user_id]), 200
+    else:
+        return jsonify({'error': 'Invalid data'}), 400
+
 
 # Remove a specified quantity of a product from the user’s cart
 
